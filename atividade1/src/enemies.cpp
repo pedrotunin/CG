@@ -64,7 +64,7 @@ void Enemies::terminateGL() {
 
 void Enemies::update() {
   for (auto &enemy : m_enemies) {
-    enemy.m_translation.y -= 0.00175f;
+    enemy.m_translation.y -= 0.002f;
   }
 }
 
