@@ -106,9 +106,9 @@ void Ship::terminateGL() {
 void Ship::update(const GameData &gameData) {
   // Translate
   if (gameData.m_input[static_cast<size_t>(Input::Left)] and m_translation.x >= -1.0f + m_scale){
-      m_translation.x -= 0.01f;
+      m_translation.x -= 0.015f;
   };
   if (gameData.m_input[static_cast<size_t>(Input::Right)] and m_translation.x <= 1.0f - m_scale) {
-      m_translation.x += 0.01f;
+      m_translation.x += 0.015f;
   };
 }
