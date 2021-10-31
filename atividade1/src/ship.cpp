@@ -17,7 +17,7 @@ void Ship::initializeGL(GLuint program) {
   m_velocity = glm::vec2(0);
   m_color = glm::vec4{0.0f, 1.0f, 0.0f, 1.0f};
 
-  std::array<glm::vec2, 11> positions{
+  std::array<glm::vec2, 9> positions{
       // Ship body
       glm::vec2{-5.0f, +7.5f}, glm::vec2{+5.0f, +7.5f},
       glm::vec2{-5.0f, -7.5f}, glm::vec2{+5.0f, -7.5f},
@@ -25,9 +25,7 @@ void Ship::initializeGL(GLuint program) {
       glm::vec2{-13.0f, -7.5f}, glm::vec2{+13.0f, -7.5f},
 
       // Ship cannon
-      glm::vec2{0.0f, 15.0f},
-      glm::vec2{-5.0f, +7.5f},
-      glm::vec2{+5.0f, +7.5f}
+      glm::vec2{0.0f, 15.0f}
   };
 
   // Normalize
@@ -40,7 +38,7 @@ void Ship::initializeGL(GLuint program) {
     2, 1, 3,
     3, 5, 7,
     2, 4, 6,
-    8, 9, 10
+    8, 0, 1
   };
 
   // Generate VBO

@@ -47,7 +47,7 @@ void Enemies::paintGL() {
     abcg::glUniform2f(m_translationLoc, enemy.m_translation.x,
                           enemy.m_translation.y);
 
-    abcg::glDrawArrays(GL_TRIANGLE_FAN, 0, enemy.m_polygonSides + 2);
+    abcg::glDrawArrays(GL_TRIANGLE_FAN, 0, enemy.m_polygonSides * 3);
 
     abcg::glBindVertexArray(0);
   }
@@ -72,7 +72,7 @@ Enemies::Enemy Enemies::createEnemy(glm::vec2 translation,
                                               float scale) {
   Enemy enemy;
 
-  enemy.m_polygonSides = 10;
+  enemy.m_polygonSides = 3;
 
   enemy.m_color = glm::vec4{1.0f, 0.0f, 0.0f, 1.0f};
 
@@ -104,7 +104,8 @@ Enemies::Enemy Enemies::createEnemy(glm::vec2 translation,
 
   std::array indices{
     0, 1, 2,
-    6, 7, 4
+    3, 4, 5,
+    0, 6, 7
   };
 
   glGenBuffers(1, &enemy.m_vbo);
