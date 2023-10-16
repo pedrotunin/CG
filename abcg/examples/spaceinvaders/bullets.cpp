@@ -51,7 +51,10 @@ void Bullets::create(GLuint program) {
   abcg::glBindVertexArray(0);
 }
 
-void Bullets::paint() {
+void Bullets::paint(GameData const &gameData) {
+  if (gameData.m_state != State::Playing)
+    return;
+
   abcg::glUseProgram(m_program);
 
   abcg::glBindVertexArray(m_VAO);

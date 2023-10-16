@@ -92,8 +92,8 @@ void Window::onPaint() {
   abcg::glClear(GL_COLOR_BUFFER_BIT);
   abcg::glViewport(0, 0, m_viewportSize.x, m_viewportSize.y);
 
-  m_enemies.paint();
-  m_bullets.paint();
+  m_enemies.paint(m_gameData);
+  m_bullets.paint(m_gameData);
   m_ship.paint(m_gameData);
 }
 
@@ -171,7 +171,7 @@ void Window::checkCollisions() {
           const auto distance{
               glm::distance(bullet.m_translation, enemyTranslation)};
 
-          if (distance < m_bullets.m_scale + enemy.m_scale * 0.70f) {
+          if (distance < m_bullets.m_scale + enemy.m_scale * 1.0f) {
             enemy.m_hit = true;
             bullet.m_dead = true;
 

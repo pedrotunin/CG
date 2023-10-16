@@ -33,7 +33,10 @@ void Enemies::create(GLuint program, int quantity) {
   }
 }
 
-void Enemies::paint() {
+void Enemies::paint(GameData const &gameData) {
+  if (gameData.m_state != State::Playing)
+    return;
+
   abcg::glUseProgram(m_program);
 
   for (const auto &enemy : m_enemies) {

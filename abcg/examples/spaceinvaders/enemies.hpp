@@ -12,7 +12,7 @@
 class Enemies {
 public:
   void create(GLuint program, int quantity);
-  void paint();
+  void paint(GameData const &gameData);
   void destroy();
   void update(float deltaTime);
 

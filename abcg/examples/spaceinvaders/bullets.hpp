@@ -13,7 +13,7 @@ class OpenGLWindow;
 class Bullets {
 public:
   void create(GLuint program);
-  void paint();
+  void paint(GameData const &gameData);
   void destroy();
   void update(Ship &ship, const GameData &gameData, float deltaTime);
 
