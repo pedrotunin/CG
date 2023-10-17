@@ -1,4 +1,5 @@
 #include "window.hpp"
+#include "gamedata.hpp"
 
 void Window::onEvent(SDL_Event const &event) {
   // Keyboard events
@@ -62,6 +63,7 @@ void Window::onCreate() {
 
 void Window::restart() {
   m_gameData.m_state = State::Playing;
+  m_gameData.m_enemies_left = 50;
 
   m_ship.create(m_objectsProgram);
   m_enemies.create(m_objectsProgram, 50);
@@ -101,25 +103,44 @@ void Window::onPaintUI() {
   abcg::OpenGLWindow::onPaintUI();
 
   {
-    auto const size{ImVec2(300, 85)};
-    auto const position{ImVec2((m_viewportSize.x - size.x) / 2.0f,
-                               (m_viewportSize.y - size.y) / 2.0f)};
-    ImGui::SetNextWindowPos(position);
-    ImGui::SetNextWindowSize(size);
+
     ImGuiWindowFlags const flags{ImGuiWindowFlags_NoBackground |
                                  ImGuiWindowFlags_NoTitleBar |
                                  ImGuiWindowFlags_NoInputs};
-    ImGui::Begin(" ", nullptr, flags);
-    ImGui::PushFont(m_font);
 
-    if (m_gameData.m_state == State::GameOver) {
-      ImGui::Text("Game Over!");
-    } else if (m_gameData.m_state == State::Win) {
-      ImGui::Text("*You Win!*");
+    if (m_gameData.m_state == State::Playing) {
+
+      auto sizeDisplayEnemies{ImVec2(250, 250)};
+      auto posDisplayEnemies{ImVec2(-1.0f, m_viewportSize.y * 0.95f)};
+
+      ImGui::SetNextWindowPos(posDisplayEnemies);
+      ImGui::SetNextWindowSize(sizeDisplayEnemies);
+      ImGui::Begin(" ", nullptr, flags);
+
+      // ImGui::PushFont(m_font);
+      ImGui::Text("Inimigos: %d", m_gameData.m_enemies_left);
+      // ImGui::PopFont();
+      ImGui::End();
+
+    } else {
+
+      auto const size{ImVec2(300, 85)};
+      auto const position{ImVec2((m_viewportSize.x - size.x) / 2.0f,
+                                 (m_viewportSize.y - size.y) / 2.0f)};
+      ImGui::SetNextWindowPos(position);
+      ImGui::SetNextWindowSize(size);
+      ImGui::Begin(" ", nullptr, flags);
+      ImGui::PushFont(m_font);
+
+      if (m_gameData.m_state == State::GameOver) {
+        ImGui::Text("Game Over!");
+      } else if (m_gameData.m_state == State::Win) {
+        ImGui::Text("*You Win!*");
+      }
+
+      ImGui::PopFont();
+      ImGui::End();
     }
-
-    ImGui::PopFont();
-    ImGui::End();
   }
 }
 
@@ -175,7 +196,7 @@ void Window::checkCollisions() {
             enemy.m_hit = true;
             bullet.m_dead = true;
 
-            //  m_gameData.m_enemies_left -= 1;
+            m_gameData.m_enemies_left -= 1;
           }
         }
       }
