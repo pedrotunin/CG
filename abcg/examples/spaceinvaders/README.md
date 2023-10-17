@@ -12,7 +12,7 @@
 
 ## Detalhes
 
-A aplicação é uma tentativa de cópia do clássico Space Invaders.
+A aplicação é uma **tentativa** de cópia do clássico Space Invaders.
 
 Foi utilizado como base o código do jogo Asteroids, disponibilizado nas aulas.
 
@@ -36,7 +36,11 @@ A implementação dos tiros da nave não mudou com o projeto Asteroids, somente 
 
 #### Contador de inimigos
 
-ESCREVER AQUI O CONTADOR
+Ao iniciar um novo jogo (execução da função restart da classe Window), a variável **m_gameData.m_enemies_left** é inicializada com a quantidade inicial de inimigos.
+
+A cada vez que é detectada uma colisão de um tiro com um inimigo (função checkCollisions da classe Window), o contador é decrescido em 1.
+
+Para efetivamente mostrar na tela o conteúdo dessa variável, foi criado um campo de texto na função paintUI da classe Window. Além disso, foi criada uma lógica para somente mostrar o campo quando o estado do jogo for "Playing", ou seja, só quando o jogo estiver sendo executado.
 
 ### Movimentação
 
@@ -50,4 +54,8 @@ A cada vez que o jogador pressiona um dos botões de movimento lateral (A, D, <-
 
 As naves inimigas se movimentam de cima para baixo e de um lado para o outro. A cada vez que as naves das extremidades chegam em um lado da tela, a posição Y de todas é decrescida.
 
-### Colisões
+Além disso, a velocidade das naves é aumentada à medida que a quantidade de naves diminui. Para isso foi utilizada a seguinte função:
+
+f(x) = 1 + log<sub>2</sub><sup>QTD_INICIAL_INIMIGOS/x</sup>
+
+Onde **x** é quantidade atual de inimigos.
