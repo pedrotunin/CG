@@ -25,7 +25,7 @@ Foi utilizado como base o código do jogo Asteroids, disponibilizado nas aulas.
 - Os vértices foram distribuídos como na imagem acima (pontos brancos) e os triângulos destacados pelas linhas.
 
 #### Naves Inimigas
-![Nave Iniimiga com os vértices](https://cdn.discordapp.com/attachments/561391859411451916/904500076620173362/unknown.png)
+![Nave Inimiga com os vértices](https://cdn.discordapp.com/attachments/561391859411451916/904500076620173362/unknown.png)
 
  - Foram utilizados 9 vértices, formando 3 triângulos.
  - Os vértices foram distribuídos como na imagem acima (pontos brancos), e os triângulos destacados (verde, azul, rosa).
@@ -59,3 +59,7 @@ Além disso, a velocidade das naves é aumentada à medida que a quantidade de n
 f(x) = 1 + log<sub>2</sub><sup>QTD_INICIAL_INIMIGOS/x</sup>
 
 Onde **x** é quantidade atual de inimigos.
+
+No gráfico abaixo, é a função para QTD_INICIAL_INIMIGOS = 50. A função funcionou para o que eu precisava, pois aumenta a dificuldade aos poucos no decorrer do jogo, e no final aumenta consideravelmente.
+
+![Gráfico da função f](https://cdn.discordapp.com/attachments/715747590578110486/1163653613399330917/image.png)
