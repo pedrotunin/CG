@@ -66,14 +66,15 @@ void Enemies::update(float deltaTime) {
   for (auto &enemy : m_enemies) {
     enemy.m_translation.x -=
         0.2f * deltaTime * m_direction * (log(50 / m_enemies.size()) + 1);
-    if (m_updateY.elapsed() >= 900.0 / 1000.0 &&
+    if (m_updateY.elapsed() >= 100.0 / 1000.0 &&
         (enemy.m_translation.x <= -0.95f || enemy.m_translation.x >= 0.95f)) {
+
+      m_updateY.restart();
 
       for (auto &e : m_enemies)
         e.m_translation.y -= 0.05f;
 
       m_direction *= -1.0f;
-      m_updateY.restart();
     }
   }
 }

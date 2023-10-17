@@ -143,7 +143,7 @@ void Window::checkCollisions() {
     const auto enemyTranslation{enemy.m_translation};
     const auto distance{glm::distance(m_ship.m_translation, enemyTranslation)};
 
-    if (distance < m_ship.m_scale * 0.9f + enemy.m_scale * 0.40f) {
+    if (distance < m_ship.m_scale * 0.9f + enemy.m_scale * 0.45f) {
       m_gameData.m_state = State::GameOver;
       m_restartWaitTimer.restart();
     }

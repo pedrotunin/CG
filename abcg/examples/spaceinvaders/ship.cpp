@@ -110,8 +110,8 @@ void Ship::destroy() {
 void Ship::update(GameData const &gameData, float deltaTime) {
   // Rotate
   if (gameData.m_input[gsl::narrow<size_t>(Input::Left)] && m_translation.x >= -0.90)
-    m_translation.x -= 0.75f * deltaTime;
+    m_translation.x -= 0.85f * deltaTime;
   if (gameData.m_input[gsl::narrow<size_t>(Input::Right)] && m_translation.x <= 0.90)
-    m_translation.x += 0.75f * deltaTime;
+    m_translation.x += 0.85f * deltaTime;
 
 }
