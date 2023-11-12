@@ -60,6 +60,6 @@ f(x) = 1 + log<sub>2</sub><sup>QTD_INICIAL_INIMIGOS/x</sup>
 
 Onde **x** é quantidade atual de inimigos.
 
-No gráfico abaixo, é a função para QTD_INICIAL_INIMIGOS = 50. A função funcionou para o que eu precisava, pois aumenta a dificuldade aos poucos no decorrer do jogo, e no final aumenta consideravelmente.
+No gráfico abaixo, é a função para QTD_INICIAL_INIMIGOS = 50. A função funcionou para o que eu precisava, pois aumenta a dificuldade aos poucos no decorrer do jogo, e no final aumenta consideravelmente.ls 
 
 ![Gráfico da função f](https://cdn.discordapp.com/attachments/715747590578110486/1163653613399330917/image.png)
