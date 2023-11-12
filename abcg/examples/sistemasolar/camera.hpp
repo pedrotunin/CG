@@ -12,6 +12,7 @@ public:
   void dolly(float speed);
   void truck(float speed);
   void pan(float speed);
+  void climb(float speed);
 
   glm::mat4 const &getViewMatrix() const { return m_viewMatrix; }
   glm::mat4 const &getProjMatrix() const { return m_projMatrix; }

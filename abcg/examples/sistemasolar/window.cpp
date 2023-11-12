@@ -24,6 +24,10 @@ void Window::onEvent(SDL_Event const &event) {
       m_truckSpeed = -1.0f;
     if (event.key.keysym.sym == SDLK_e)
       m_truckSpeed = 1.0f;
+    if (event.key.keysym.sym == SDLK_r)
+      m_climbSpeed = 1.0f;
+    if (event.key.keysym.sym == SDLK_f)
+      m_climbSpeed = -1.0f;
   }
   if (event.type == SDL_KEYUP) {
     if ((event.key.keysym.sym == SDLK_UP || event.key.keysym.sym == SDLK_w) &&
@@ -43,6 +47,10 @@ void Window::onEvent(SDL_Event const &event) {
       m_truckSpeed = 0.0f;
     if (event.key.keysym.sym == SDLK_e && m_truckSpeed > 0)
       m_truckSpeed = 0.0f;
+    if (event.key.keysym.sym == SDLK_r && m_climbSpeed > 0)
+      m_climbSpeed = 0.0f;
+    if (event.key.keysym.sym == SDLK_f && m_climbSpeed < 0)
+      m_climbSpeed = 0.0f;
   }
 }
 
@@ -61,8 +69,6 @@ void Window::onCreate() {
                                  {.source = assetsPath + "lookat.frag",
                                   .stage = abcg::ShaderStage::Fragment}});
 
-  m_ground.create(m_program);
-
   // Get location of uniform variables
   m_viewMatrixLocation = abcg::glGetUniformLocation(m_program, "viewMatrix");
   m_projMatrixLocation = abcg::glGetUniformLocation(m_program, "projMatrix");
@@ -70,7 +76,7 @@ void Window::onCreate() {
   m_colorLocation = abcg::glGetUniformLocation(m_program, "color");
 
   // Load model
-  loadModelFromFile(assetsPath + "bunny.obj");
+  loadModelFromFile(assetsPath + "geosphere.obj");
 
   // Generate VBO
   abcg::glGenBuffers(1, &m_VBO);
@@ -177,44 +183,94 @@ void Window::onPaint() {
 
   abcg::glBindVertexArray(m_VAO);
 
-  // Draw white bunny
+  // Draw Sun
   glm::mat4 model{1.0f};
   model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 0.0f));
   model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0, 1, 0));
-  model = glm::scale(model, glm::vec3(0.5f));
+  model = glm::scale(model, glm::vec3(0.8f));
 
   abcg::glUniformMatrix4fv(m_modelMatrixLocation, 1, GL_FALSE, &model[0][0]);
-  abcg::glUniform4f(m_colorLocation, 1.0f, 1.0f, 1.0f, 1.0f);
+  abcg::glUniform4f(m_colorLocation, 1.0f, 1.0f, 0.0f, 1.0f);
   abcg::glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT,
                        nullptr);
 
-  // Draw yellow bunny
+  // Draw Mercury
   model = glm::mat4(1.0);
-  model = glm::translate(model, glm::vec3(0.0f, 0.0f, -1.0f));
-  model = glm::scale(model, glm::vec3(0.5f));
+  model = glm::translate(model, glm::vec3(-4.0f, 0.0f, 0.0f));
+  model = glm::scale(model, glm::vec3(0.015f));
 
   abcg::glUniformMatrix4fv(m_modelMatrixLocation, 1, GL_FALSE, &model[0][0]);
-  abcg::glUniform4f(m_colorLocation, 1.0f, 0.8f, 0.0f, 1.0f);
+  abcg::glUniform4f(m_colorLocation, 0.37f, 0.37f, 0.37f, 1.0f);
   abcg::glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT,
                        nullptr);
 
-  // Draw blue bunny
+  // Draw Venus
   model = glm::mat4(1.0);
-  model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.0f));
-  model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0, 1, 0));
-  model = glm::scale(model, glm::vec3(0.5f));
+  model = glm::translate(model, glm::vec3(-5.0f, 0.0f, 0.0f));
+  model = glm::scale(model, glm::vec3(0.033f));
 
   abcg::glUniformMatrix4fv(m_modelMatrixLocation, 1, GL_FALSE, &model[0][0]);
-  abcg::glUniform4f(m_colorLocation, 0.0f, 0.8f, 1.0f, 1.0f);
+  abcg::glUniform4f(m_colorLocation, 1.0f, 0.15f, 0.0f, 1.0f);
   abcg::glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT,
                        nullptr);
 
-  // Draw red bunny
+  // Draw Earth
   model = glm::mat4(1.0);
-  model = glm::scale(model, glm::vec3(0.1f));
+  model = glm::translate(model, glm::vec3(-6.0f, 0.0f, 0.0f));
+  model = glm::scale(model, glm::vec3(0.037f));
 
   abcg::glUniformMatrix4fv(m_modelMatrixLocation, 1, GL_FALSE, &model[0][0]);
-  abcg::glUniform4f(m_colorLocation, 1.0f, 0.25f, 0.25f, 1.0f);
+  abcg::glUniform4f(m_colorLocation, 0.0f, 0.0f, 0.5f, 1.0f);
+  abcg::glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT,
+                       nullptr);
+
+  // Draw Mars
+  model = glm::mat4(1.0);
+  model = glm::translate(model, glm::vec3(-7.0f, 0.0f, 0.0f));
+  model = glm::scale(model, glm::vec3(0.02f));
+
+  abcg::glUniformMatrix4fv(m_modelMatrixLocation, 1, GL_FALSE, &model[0][0]);
+  abcg::glUniform4f(m_colorLocation, 1.0f, 0.0f, 0.1f, 1.0f);
+  abcg::glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT,
+                       nullptr);
+
+  // Draw Jupiter
+  model = glm::mat4(1.0);
+  model = glm::translate(model, glm::vec3(-9.0f, 0.0f, 0.0f));
+  model = glm::scale(model, glm::vec3(0.41f));
+
+  abcg::glUniformMatrix4fv(m_modelMatrixLocation, 1, GL_FALSE, &model[0][0]);
+  abcg::glUniform4f(m_colorLocation, 0.92f, 0.74f, 0.39f, 1.0f);
+  abcg::glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT,
+                       nullptr);
+
+  // Draw Saturn
+  model = glm::mat4(1.0);
+  model = glm::translate(model, glm::vec3(-12.0f, 0.0f, 0.0f));
+  model = glm::scale(model, glm::vec3(0.34f));
+
+  abcg::glUniformMatrix4fv(m_modelMatrixLocation, 1, GL_FALSE, &model[0][0]);
+  abcg::glUniform4f(m_colorLocation, 0.74f, 0.74f, 0.39f, 1.0f);
+  abcg::glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT,
+                       nullptr);
+
+  // Draw Uranus
+  model = glm::mat4(1.0);
+  model = glm::translate(model, glm::vec3(-14.0f, 0.0f, 0.0f));
+  model = glm::scale(model, glm::vec3(0.15f));
+
+  abcg::glUniformMatrix4fv(m_modelMatrixLocation, 1, GL_FALSE, &model[0][0]);
+  abcg::glUniform4f(m_colorLocation, 0.54f, 0.54f, 1.0f, 1.0f);
+  abcg::glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT,
+                       nullptr);
+
+  // Draw Neptune
+  model = glm::mat4(1.0);
+  model = glm::translate(model, glm::vec3(-15.0f, 0.0f, 0.0f));
+  model = glm::scale(model, glm::vec3(0.14f));
+
+  abcg::glUniformMatrix4fv(m_modelMatrixLocation, 1, GL_FALSE, &model[0][0]);
+  abcg::glUniform4f(m_colorLocation, 0.33f, 0.33f, 0.64f, 1.0f);
   abcg::glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT,
                        nullptr);
 
@@ -234,7 +290,6 @@ void Window::onResize(glm::ivec2 const &size) {
 }
 
 void Window::onDestroy() {
-  m_ground.destroy();
 
   abcg::glDeleteProgram(m_program);
   abcg::glDeleteBuffers(1, &m_EBO);
@@ -249,4 +304,5 @@ void Window::onUpdate() {
   m_camera.dolly(m_dollySpeed * deltaTime);
   m_camera.truck(m_truckSpeed * deltaTime);
   m_camera.pan(m_panSpeed * deltaTime);
+  m_camera.climb(m_climbSpeed * deltaTime);
 }

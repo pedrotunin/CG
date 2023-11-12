@@ -12,6 +12,15 @@ void Camera::computeViewMatrix() {
   m_viewMatrix = glm::lookAt(m_eye, m_at, m_up);
 }
 
+void Camera::climb(float speed) {
+  auto const up{glm::normalize(m_up)};
+
+  m_eye += up * speed;
+  m_at += up * speed;
+
+  computeViewMatrix();
+}
+
 void Camera::dolly(float speed) {
   // Compute forward vector (view direction)
   auto const forward{glm::normalize(m_at - m_eye)};
