@@ -27,7 +27,7 @@ void Window::onCreate() {
                                   .stage = abcg::ShaderStage::Fragment}});
 
   // Load model
-  loadModelFromFile(assetsPath + "bunny.obj");
+  loadModelFromFile(assetsPath + "man.obj");
   standardize();
 
   m_verticesToDraw = m_indices.size();

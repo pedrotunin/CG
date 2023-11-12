@@ -5,4 +5,5 @@
 #add_subdirectory(regularpolygons)
 #add_subdirectory(asteroids)
 #add_subdirectory(spaceinvaders)
-add_subdirectory(loadmodel)
+#add_subdirectory(loadmodel)
+add_subdirectory(lookat)
