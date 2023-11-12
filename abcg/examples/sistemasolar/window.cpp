@@ -224,6 +224,16 @@ void Window::onPaint() {
   abcg::glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT,
                        nullptr);
 
+  // Draw Moon
+  model = glm::mat4(1.0);
+  model = glm::translate(model, glm::vec3(-5.8f, 0.0f, 0.0f));
+  model = glm::scale(model, glm::vec3(0.0037f));
+
+  abcg::glUniformMatrix4fv(m_modelMatrixLocation, 1, GL_FALSE, &model[0][0]);
+  abcg::glUniform4f(m_colorLocation, 0.5f, 0.5f, 0.5f, 1.0f);
+  abcg::glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT,
+                       nullptr);
+
   // Draw Mars
   model = glm::mat4(1.0);
   model = glm::translate(model, glm::vec3(-7.0f, 0.0f, 0.0f));
@@ -276,9 +286,6 @@ void Window::onPaint() {
 
   abcg::glBindVertexArray(0);
 
-  // Draw ground
-  // m_ground.paint();
-
   abcg::glUseProgram(0);
 }
 
@@ -290,7 +297,6 @@ void Window::onResize(glm::ivec2 const &size) {
 }
 
 void Window::onDestroy() {
-
   abcg::glDeleteProgram(m_program);
   abcg::glDeleteBuffers(1, &m_EBO);
   abcg::glDeleteBuffers(1, &m_VBO);
