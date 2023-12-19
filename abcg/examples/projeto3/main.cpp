@@ -6,10 +6,11 @@ int main(int argc, char **argv) {
 
     Window window;
     window.setOpenGLSettings({.samples = 4});
-    window.setWindowSettings({.width = 600,
-                              .height = 600,
-                              .showFPS = false,
-                              .title = "Sistema Solar v2"});
+    window.setWindowSettings({
+        .width = 600,
+        .height = 600,
+        .title = "Model Viewer (version 1)",
+    });
 
     app.run(window);
   } catch (std::exception const &exception) {
