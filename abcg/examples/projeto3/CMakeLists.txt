@@ -1,4 +1,3 @@
-project(viewer1)
-add_executable(${PROJECT_NAME} main.cpp model.cpp window.cpp
-                               trackball.cpp)
+project(projeto3)
+add_executable(${PROJECT_NAME} main.cpp model.cpp window.cpp trackball.cpp)
 enable_abcg(${PROJECT_NAME})
