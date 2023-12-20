@@ -49,7 +49,7 @@ void Window::onCreate() {
   }
 
   // Load model
-  m_model.loadObj(assetsPath + "bunny.obj");
+  m_model.loadObj(assetsPath + "geosphere.obj");
   m_model.setupVAO(m_programs.at(m_currentProgramIndex));
 
   m_trianglesToDraw = m_model.getNumTriangles();

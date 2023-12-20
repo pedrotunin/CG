@@ -27,7 +27,7 @@ void Window::onCreate() {
                                   .stage = abcg::ShaderStage::Fragment}});
 
   // Load model
-  loadModelFromFile(assetsPath + "ringedplanet.obj");
+  loadModelFromFile(assetsPath + "bunny.obj");
   standardize();
 
   m_verticesToDraw = m_indices.size();

@@ -1,8 +1,8 @@
-# Sistema Solar
+# Earth
 
 ## Link do Projeto
 
-### [Clique aqui!](https://pedrotunin.github.io/CG/sistemasolar/)
+### [Clique aqui!](https://pedrotunin.github.io/CG/earth/)
 
 ## Integrantes
 
@@ -12,16 +12,18 @@
 
 ## Sobre
 
-A aplicação é um modelo simplificado do sistema solar, onde é possível se movimentar entre os astros.
+A aplicação apresenta um modelo do planeta Terra com iluminação e textura.
 
-Foi utilizado como base o código do projeto LookAt, disponibilizado nas aulas.
+Foi utilizado como base o código dos projetos viewer.
 
-## Movimentação
+## Trackball
 
 - Para se movimentar para frente e para trás utilize as teclas W e A ou as setas direcionais cima e baixo.
 - Para se movimentar para os lados utilize as teclas Q e E.
 - Para se movimentar para cima e para baixo utilize as teclas R e F.
 - Para movimentar a câmera para os lados utilize as teclas A e D ou as setas direcionais esquerda e direita.
+
+- Para movimentar 
 
 ## Implementação
 Foram implementadas as classes: window.cpp e camera.cpp
