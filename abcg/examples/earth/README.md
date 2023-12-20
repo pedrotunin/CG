@@ -18,145 +18,75 @@ Foi utilizado como base o código dos projetos viewer.
 
 ## Trackball
 
-- Para se movimentar para frente e para trás utilize as teclas W e A ou as setas direcionais cima e baixo.
-- Para se movimentar para os lados utilize as teclas Q e E.
-- Para se movimentar para cima e para baixo utilize as teclas R e F.
-- Para movimentar a câmera para os lados utilize as teclas A e D ou as setas direcionais esquerda e direita.
+- Para movimentar o trackball utilize o mouse clicando com o botão esquerdo do mouse e arrastando.
+- Também é possivel aumentar ou diminuir a velocidade de rotação utilizando as teclas A, D, <- e ->
 
-- Para movimentar 
 
-## Implementação
-Foram implementadas as classes: window.cpp e camera.cpp
-
-- **window.cpp:** Responsável por mostrar a aplicação na tela e desenhar os astros.
-- **camera.cpp:** Responsável pela camera LookAt, com os métodos que possibilitam a movimentação da câmera.
-
-### camera.cpp
-
-A classe é quase idêntica ao projeto lookat. Foi adicionada a função para possibilitar a movimentação vertical. Segue o código:
-
+Para isso funcionar foram adicionas as seguintes linhas na função **Window::onEvent**:
 ```cpp
-void Camera::climb(float speed) {
-  // Compute up vector
-  auto const up{glm::normalize(m_up)};
-
-  // Move eye and center up (speed > 0) or down (speed < 0)
-  m_eye += up * speed;
-  m_at += up * speed;
-
-  computeViewMatrix();
-}
-```
-
-Para realizar a movimentação vertifical, primeiro obtemos o vetor correspondente a direção vertical (**up**). Em seguida, os vetores **m_eye** e **m_at** são acrescidos do vetor do movimento realizado (para cima ou para baixo), de acordo com o parâmetro **speed**. Se **speed** for maior do que 0, a câmera se move para cima, e se move para baixo caso **speed** for menor do que 0.
-
-Ainda, a função Camera::computeProjectionMatrix foi alterada para permitir que a distância máxima de renderização fosse alterada de 5 unidades de distância para 25 unidades. Segue o código:
-
-```cpp
-void Camera::computeProjectionMatrix(glm::vec2 const &size) {
-  m_projMatrix = glm::mat4(1.0f);
-  auto const aspect{size.x / size.y};
-  m_projMatrix = glm::perspective(glm::radians(70.0f), aspect, 0.1f, 25.0f);
-}
-```
-
-### window.cpp
-
-Para realizar a movimentação vertifical, a função Window::onEvent() foi alterada para identificar quando as teclas R e F forem pressionadas ou liberadas.
-
-```cpp
-void Window::onEvent(SDL_Event const &event) {
   if (event.type == SDL_KEYDOWN) {
-    
-    ...
-
-    if (event.key.keysym.sym == SDLK_r)
-      m_climbSpeed = 1.0f;
-    if (event.key.keysym.sym == SDLK_f)
-      m_climbSpeed = -1.0f;
+    if (event.key.keysym.sym == SDLK_LEFT || event.key.keysym.sym == SDLK_a)
+      m_trackBallModel.setVelocity(m_trackBallModel.getVelocity() - 0.01f);
+    if (event.key.keysym.sym == SDLK_RIGHT || event.key.keysym.sym == SDLK_d)
+      m_trackBallModel.setVelocity(m_trackBallModel.getVelocity() + 0.01f);
   }
-  if (event.type == SDL_KEYUP) {
+```
 
-    ...
-
-    if (event.key.keysym.sym == SDLK_r && m_climbSpeed > 0)
-      m_climbSpeed = 0.0f;
-    if (event.key.keysym.sym == SDLK_f && m_climbSpeed < 0)
-      m_climbSpeed = 0.0f;
-  }
+Além disso, uma nova função foi criada na classe **TrackBall**:
+```cpp
+float TrackBall::getVelocity() { 
+  return m_velocity; 
 }
 ```
 
-Na função Window::onCreate() foi alterado o modelo 3D que será utilizado. Para representar um astro foi escolhido um modelo de uma esfera.
+## Terra
+
+Foi utilizado um modelo de uma esfera obtido na internet, juntamente com seu arquivo .mtl correspondente.
+
+Para deixar a rotação parecida com a da Terra, o eixo inicial do trackball foi ajustado para as coordenadas {0, 1, 0}, com o seguinte trecho de codigo da função **Window::onCreate**:
 
 ```cpp
-// Load model
-loadModelFromFile(assetsPath + "geosphere.obj");
+// Initial trackball spin
+m_trackBallModel.setAxis(glm::normalize(glm::vec3(0, 1, 0)));
+m_trackBallModel.setVelocity(0.1f);
 ```
 
-Para desenhar os astros na tela utilizamos o seguinte trecho de código presente na função Window::onPaint. Segue código:
+Dessa forma, o planeta roda ao longo do seu eixo Y.
+
+## Espaço
+
+Para dar o aspecto de que o planeta está no espaço, foi implementado um skybox semelhante ao do projeto viewer6. Para os 6 lados do cubo, foi utilizada a mesma imagem. Para obter a maior qualidade possivel, utilizei uma imagem de 2048x2048 pixels.
+
+## Textura e iluminação
+
+Para a textura, quase nada foi alterado dos projetos viewer, apenas o mapping mode e a textura em si. O mapping mode foi definido como esférico, já  que o modelo se trata de uma esfera, servindo perfeitamente para o proposito.
+
+Retirei a escolha do mapping mode da interface e o coloquei na definição da classe **Window**:
+```cpp
+// Mapping mode
+// 0: triplanar; 1: cylindrical; 2: spherical; 3: from mesh
+int m_mappingMode{2};
+```
+
+Em relação à iluminação, a implementação não mudou muito dos projetos viewer, apenas os coeficientes de iluminação e materias mudaram para melhor atender as necessidades do projeto.
+
+Os valores foram obtidos empiricamente por meio de testes. Segue trecho na definição da classe **Window**:
 
 ```cpp
-// Draw Sun
-glm::mat4 model{1.0f};
-model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 0.0f));
-model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0, 1, 0));
-model = glm::scale(model, glm::vec3(0.8f));
-
-abcg::glUniformMatrix4fv(m_modelMatrixLocation, 1, GL_FALSE, &model[0][0]);
-abcg::glUniform4f(m_colorLocation, 1.0f, 1.0f, 0.0f, 1.0f);
-abcg::glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT,
-                       nullptr);
+// Light and material properties
+glm::vec4 m_lightDir{-1.0f, -1.0f, -1.0f, 0.0f};
+glm::vec4 m_Ia{1.0f};
+glm::vec4 m_Id{1.0f};
+glm::vec4 m_Is{1.0f};
+glm::vec4 m_Ka{0.101f, 0.101f, 0.101f, 1.0f};
+glm::vec4 m_Kd{0.722f, 0.722f, 0.722f, 1.0f};
+glm::vec4 m_Ks{0.624f, 0.624f, 0.624f, 1.0f};
+float m_shininess{10.0f};
 ```
 
-O trecho foi repetido para que todos os astros fossem desenhados corretamente, alterando apenas a posição, escala e cor. O desenho de todos os astros vai da linha 187 até a linha 285 do arquivo window.cpp.
+## Interface
 
-A função Window::onUpdate foi alterada de forma a inserir a atualização para quando ocorrer alguma movimentação vertical. Segue código:
-
-```cpp
-void Window::onUpdate() {
-  auto const deltaTime{gsl::narrow_cast<float>(getDeltaTime())};
-
-  m_camera.dolly(m_dollySpeed * deltaTime * 1.5f);
-  m_camera.truck(m_truckSpeed * deltaTime * 1.5f);
-  m_camera.pan(m_panSpeed * deltaTime * 1.5f);
-  m_camera.climb(m_climbSpeed * deltaTime * 1.5f);
-}
-```
-
-### lookat.vert
-
-Para remover o efeito de intendidade de cor, a linha 15 do arquivo foi alterada para ser sempre igual a 1.
-
-```cpp
-float i = 1.0;
-```
-
-Dessa forma, a intensidade das cores sempre é máxima não importando a distância.
-
-O código final ficou assim:
-
-```cpp
-#version 300 es
-
-layout(location = 0) in vec3 inPosition;
-
-uniform vec4 color;
-uniform mat4 modelMatrix;
-uniform mat4 viewMatrix;
-uniform mat4 projMatrix;
-
-out vec4 fragColor;
-
-void main() {
-  vec4 posEyeSpace = viewMatrix * modelMatrix * vec4(inPosition, 1);
-
-  float i = 1.0;
-  fragColor = vec4(i, i, i, 1) * color;
-
-  gl_Position = projMatrix * posEyeSpace;
-}
-```
+Para deixar o projeto final mais apresentável, todas as interfaces foram retiradas e a janela foi definida para ocupar toda a tela.
 
 ## Licença
 
