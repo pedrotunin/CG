@@ -10,4 +10,4 @@
 #add_subdirectory(viewer6)
 #add_subdirectory(starfield)
 #add_subdirectory(sistemasolar)
-add_subdirectory(projeto3)
+add_subdirectory(earth)
