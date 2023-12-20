@@ -80,3 +80,5 @@ glm::vec3 TrackBall::project(glm::vec2 const &position) const {
 
   return projected;
 }
+
+float TrackBall::getVelocity() { return m_velocity; }

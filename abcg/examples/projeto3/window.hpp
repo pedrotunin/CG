@@ -36,17 +36,17 @@ private:
 
   // Mapping mode
   // 0: triplanar; 1: cylindrical; 2: spherical; 3: from mesh
-  int m_mappingMode{};
+  int m_mappingMode{2};
 
   // Light and material properties
   glm::vec4 m_lightDir{-1.0f, -1.0f, -1.0f, 0.0f};
   glm::vec4 m_Ia{1.0f};
   glm::vec4 m_Id{1.0f};
   glm::vec4 m_Is{1.0f};
-  glm::vec4 m_Ka{};
-  glm::vec4 m_Kd{};
-  glm::vec4 m_Ks{};
-  float m_shininess{};
+  glm::vec4 m_Ka{0.101f, 0.101f, 0.101f, 1.0f};
+  glm::vec4 m_Kd{0.722f, 0.722f, 0.722f, 1.0f};
+  glm::vec4 m_Ks{0.624f, 0.624f, 0.624f, 1.0f};
+  float m_shininess{10.0f};
 
   // Skybox
   std::string const m_skyShaderName{"skybox"};

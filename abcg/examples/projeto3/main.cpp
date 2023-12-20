@@ -5,11 +5,13 @@ int main(int argc, char **argv) {
     abcg::Application app(argc, argv);
 
     Window window;
-    window.setOpenGLSettings({.samples = 4});
+    window.setOpenGLSettings({.samples = 4, .vSync = true});
     window.setWindowSettings({
         .width = 600,
         .height = 600,
-        .title = "Model Viewer (version 3)",
+        .showFPS = false,
+        .showFullscreenButton = false,
+        .title = "Earth",
     });
 
     app.run(window);

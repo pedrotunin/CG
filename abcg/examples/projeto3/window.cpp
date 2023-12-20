@@ -30,6 +30,13 @@ void Window::onEvent(SDL_Event const &event) {
     m_zoom += (event.wheel.y > 0 ? -1.0f : 1.0f) / 5.0f;
     m_zoom = glm::clamp(m_zoom, -1.5f, 1.0f);
   }
+
+  if (event.type == SDL_KEYDOWN) {
+    if (event.key.keysym.sym == SDLK_LEFT || event.key.keysym.sym == SDLK_a)
+      m_trackBallModel.setVelocity(m_trackBallModel.getVelocity() - 0.01f);
+    if (event.key.keysym.sym == SDLK_RIGHT || event.key.keysym.sym == SDLK_d)
+      m_trackBallModel.setVelocity(m_trackBallModel.getVelocity() + 0.01f);
+  }
 }
 
 void Window::onCreate() {
@@ -48,11 +55,11 @@ void Window::onCreate() {
   }
 
   // Load default model
-  loadModel(assetsPath + "geosphere.obj");
+  loadModel(assetsPath + "sphere.obj");
 
   // Initial trackball spin
-  m_trackBallModel.setAxis(glm::normalize(glm::vec3(1, 1, 1)));
-  m_trackBallModel.setVelocity(0.5f);
+  m_trackBallModel.setAxis(glm::normalize(glm::vec3(0, 1, 0)));
+  m_trackBallModel.setVelocity(0.1f);
 
   createSkybox();
 }
@@ -148,26 +155,16 @@ void Window::onUpdate() {
   m_viewMatrix =
       glm::lookAt(glm::vec3(0.0f, 0.0f, 2.0f + m_zoom),
                   glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-}
-
-void Window::onPaintUI() {
-  abcg::OpenGLWindow::onPaintUI();
 
   abcg::glDisable(GL_CULL_FACE);
-
   abcg::glFrontFace(GL_CCW);
 
   auto const aspect{gsl::narrow<float>(m_viewportSize.x) /
                     gsl::narrow<float>(m_viewportSize.y)};
   m_projMatrix = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 5.0f);
-
-  m_mappingMode = 2;
-
-  m_Ka = {0.101, 0.101, 0.101, 1.0};
-  m_Kd = {0.722, 0.722, 0.722, 1.0};
-  m_Ks = {0.624, 0.624, 0.624, 1.0};
-  m_shininess = 10.0;
 }
+
+void Window::onPaintUI() { abcg::OpenGLWindow::onPaintUI(); }
 
 void Window::onResize(glm::ivec2 const &size) {
   m_viewportSize = size;
@@ -180,7 +177,6 @@ void Window::onDestroy() {
   for (auto const &program : m_programs) {
     abcg::glDeleteProgram(program);
   }
-
   destroySkybox();
 }
 

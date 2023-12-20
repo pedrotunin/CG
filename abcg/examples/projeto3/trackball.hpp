@@ -9,6 +9,7 @@ public:
   void mousePress(glm::ivec2 const &position);
   void mouseRelease(glm::ivec2 const &position);
   void resizeViewport(glm::ivec2 const &size);
+  float getVelocity();
 
   [[nodiscard]] glm::mat4 getRotation() const;
 
