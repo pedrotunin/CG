@@ -49,11 +49,12 @@ void Window::onCreate() {
 
   // Load default model
   loadModel(assetsPath + "geosphere.obj");
-  m_mappingMode = 2; // "spherical" option
 
   // Initial trackball spin
   m_trackBallModel.setAxis(glm::normalize(glm::vec3(1, 1, 1)));
-  m_trackBallModel.setVelocity(0.1f);
+  m_trackBallModel.setVelocity(0.5f);
+
+  createSkybox();
 }
 
 void Window::loadModel(std::string_view path) {
@@ -63,6 +64,7 @@ void Window::loadModel(std::string_view path) {
 
   m_model.loadDiffuseTexture(assetsPath + "maps/earth.jpg");
   m_model.loadNormalTexture(assetsPath + "maps/earth.jpg");
+  m_model.loadCubeTexture(assetsPath + "maps/cube/");
   m_model.loadObj(path);
   m_model.setupVAO(m_programs.at(m_currentProgramIndex));
   m_trianglesToDraw = m_model.getNumTriangles();
@@ -99,13 +101,21 @@ void Window::onPaint() {
   auto const KdLoc{abcg::glGetUniformLocation(program, "Kd")};
   auto const KsLoc{abcg::glGetUniformLocation(program, "Ks")};
   auto const diffuseTexLoc{abcg::glGetUniformLocation(program, "diffuseTex")};
+  auto const normalTexLoc{abcg::glGetUniformLocation(program, "normalTex")};
+  auto const cubeTexLoc{abcg::glGetUniformLocation(program, "cubeTex")};
   auto const mappingModeLoc{abcg::glGetUniformLocation(program, "mappingMode")};
+  auto const texMatrixLoc{abcg::glGetUniformLocation(program, "texMatrix")};
 
   // Set uniform variables that have the same value for every model
   abcg::glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, &m_viewMatrix[0][0]);
   abcg::glUniformMatrix4fv(projMatrixLoc, 1, GL_FALSE, &m_projMatrix[0][0]);
   abcg::glUniform1i(diffuseTexLoc, 0);
+  abcg::glUniform1i(normalTexLoc, 1);
+  abcg::glUniform1i(cubeTexLoc, 2);
   abcg::glUniform1i(mappingModeLoc, m_mappingMode);
+
+  glm::mat3 const texMatrix{m_trackBallLight.getRotation()};
+  abcg::glUniformMatrix3fv(texMatrixLoc, 1, GL_TRUE, &texMatrix[0][0]);
 
   auto const lightDirRotated{m_trackBallLight.getRotation() * m_lightDir};
   abcg::glUniform4fv(lightDirLoc, 1, &lightDirRotated.x);
@@ -128,6 +138,8 @@ void Window::onPaint() {
   m_model.render(m_trianglesToDraw);
 
   abcg::glUseProgram(0);
+
+  renderSkybox();
 }
 
 void Window::onUpdate() {
@@ -141,239 +153,20 @@ void Window::onUpdate() {
 void Window::onPaintUI() {
   abcg::OpenGLWindow::onPaintUI();
 
-  auto const scaledWidth{gsl::narrow_cast<int>(m_viewportSize.x * 0.8f)};
-  auto const scaledHeight{gsl::narrow_cast<int>(m_viewportSize.y * 0.8f)};
+  abcg::glDisable(GL_CULL_FACE);
 
-  // File browser for models
-  static ImGui::FileBrowser fileDialogModel;
-  fileDialogModel.SetTitle("Load 3D Model");
-  fileDialogModel.SetTypeFilters({".obj"});
-  fileDialogModel.SetWindowSize(scaledWidth, scaledHeight);
+  abcg::glFrontFace(GL_CCW);
 
-  // File browser for textures
-  static ImGui::FileBrowser fileDialogTex;
-  fileDialogTex.SetTitle("Load Texture");
-  fileDialogTex.SetTypeFilters({".jpg", ".png"});
-  fileDialogTex.SetWindowSize(scaledWidth, scaledHeight);
+  auto const aspect{gsl::narrow<float>(m_viewportSize.x) /
+                    gsl::narrow<float>(m_viewportSize.y)};
+  m_projMatrix = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 5.0f);
 
-#if defined(__EMSCRIPTEN__)
-  auto const assetsPath{abcg::Application::getAssetsPath()};
-  fileDialogModel.SetPwd(assetsPath);
-  fileDialogTex.SetPwd(assetsPath + "/maps");
-#endif
+  m_mappingMode = 2;
 
-  // Create main window widget
-  {
-    auto widgetSize{ImVec2(222, 190)};
-
-    if (!m_model.isUVMapped()) {
-      // Add extra space for static text
-      widgetSize.y += 26;
-    }
-
-    ImGui::SetNextWindowPos(ImVec2(m_viewportSize.x - widgetSize.x - 5, 5));
-    ImGui::SetNextWindowSize(widgetSize);
-    ImGui::Begin("Widget window", nullptr,
-                 ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDecoration);
-
-    // Menu
-    {
-      bool loadModel{};
-      bool loadDiffTex{};
-      if (ImGui::BeginMenuBar()) {
-        if (ImGui::BeginMenu("File")) {
-          ImGui::MenuItem("Load 3D Model...", nullptr, &loadModel);
-          ImGui::MenuItem("Load Diffuse Texture...", nullptr, &loadDiffTex);
-          ImGui::EndMenu();
-        }
-        ImGui::EndMenuBar();
-      }
-      if (loadModel)
-        fileDialogModel.Open();
-      if (loadDiffTex)
-        fileDialogTex.Open();
-    }
-
-    // Slider will be stretched horizontally
-    ImGui::PushItemWidth(widgetSize.x - 16);
-    ImGui::SliderInt(" ", &m_trianglesToDraw, 0, m_model.getNumTriangles(),
-                     "%d triangles");
-    ImGui::PopItemWidth();
-
-    static bool faceCulling{};
-    ImGui::Checkbox("Back-face culling", &faceCulling);
-
-    if (faceCulling) {
-      abcg::glEnable(GL_CULL_FACE);
-    } else {
-      abcg::glDisable(GL_CULL_FACE);
-    }
-
-    // CW/CCW combo box
-    {
-      static std::size_t currentIndex{};
-      std::vector<std::string> const comboItems{"CCW", "CW"};
-
-      ImGui::PushItemWidth(120);
-      if (ImGui::BeginCombo("Front face",
-                            comboItems.at(currentIndex).c_str())) {
-        for (auto const index : iter::range(comboItems.size())) {
-          auto const isSelected{currentIndex == index};
-          if (ImGui::Selectable(comboItems.at(index).c_str(), isSelected))
-            currentIndex = index;
-          if (isSelected)
-            ImGui::SetItemDefaultFocus();
-        }
-        ImGui::EndCombo();
-      }
-      ImGui::PopItemWidth();
-
-      if (currentIndex == 0) {
-        abcg::glFrontFace(GL_CCW);
-      } else {
-        abcg::glFrontFace(GL_CW);
-      }
-    }
-
-    // Projection combo box
-    {
-      static std::size_t currentIndex{};
-      std::vector<std::string> comboItems{"Perspective", "Orthographic"};
-
-      ImGui::PushItemWidth(120);
-      if (ImGui::BeginCombo("Projection",
-                            comboItems.at(currentIndex).c_str())) {
-        for (auto const index : iter::range(comboItems.size())) {
-          auto const isSelected{currentIndex == index};
-          if (ImGui::Selectable(comboItems.at(index).c_str(), isSelected))
-            currentIndex = index;
-          if (isSelected)
-            ImGui::SetItemDefaultFocus();
-        }
-        ImGui::EndCombo();
-      }
-      ImGui::PopItemWidth();
-
-      auto const aspect{gsl::narrow<float>(m_viewportSize.x) /
-                        gsl::narrow<float>(m_viewportSize.y)};
-      if (currentIndex == 0) {
-        m_projMatrix =
-            glm::perspective(glm::radians(45.0f), aspect, 0.1f, 5.0f);
-      } else {
-        m_projMatrix =
-            glm::ortho(-1.0f * aspect, 1.0f * aspect, -1.0f, 1.0f, 0.1f, 5.0f);
-      }
-    }
-
-    // Shader combo box
-    {
-      static std::size_t currentIndex{};
-
-      ImGui::PushItemWidth(120);
-      if (ImGui::BeginCombo("Shader", m_shaderNames.at(currentIndex))) {
-        for (auto const index : iter::range(m_shaderNames.size())) {
-          auto const isSelected{currentIndex == index};
-          if (ImGui::Selectable(m_shaderNames.at(index), isSelected))
-            currentIndex = index;
-          if (isSelected)
-            ImGui::SetItemDefaultFocus();
-        }
-        ImGui::EndCombo();
-      }
-      ImGui::PopItemWidth();
-
-      // Set up VAO if shader program has changed
-      if (gsl::narrow<int>(currentIndex) != m_currentProgramIndex) {
-        m_currentProgramIndex = gsl::narrow<int>(currentIndex);
-        m_model.setupVAO(m_programs.at(m_currentProgramIndex));
-      }
-    }
-
-    if (!m_model.isUVMapped()) {
-      ImGui::TextColored(ImVec4(1, 1, 0, 1), "Mesh has no UV coords.");
-    }
-
-    // UV mapping box
-    {
-      std::vector<std::string> comboItems{"Triplanar", "Cylindrical",
-                                          "Spherical"};
-
-      if (m_model.isUVMapped())
-        comboItems.emplace_back("From mesh");
-
-      ImGui::PushItemWidth(120);
-      if (ImGui::BeginCombo("UV mapping",
-                            comboItems.at(m_mappingMode).c_str())) {
-        for (auto const index : iter::range(comboItems.size())) {
-          auto const isSelected{m_mappingMode == static_cast<int>(index)};
-          if (ImGui::Selectable(comboItems.at(index).c_str(), isSelected))
-            m_mappingMode = index;
-          if (isSelected)
-            ImGui::SetItemDefaultFocus();
-        }
-        ImGui::EndCombo();
-      }
-      ImGui::PopItemWidth();
-    }
-
-    ImGui::End();
-  }
-
-  // Create window for light sources
-  if (m_currentProgramIndex < 4) {
-    auto const widgetSize{ImVec2(222, 244)};
-    ImGui::SetNextWindowPos(ImVec2(m_viewportSize.x - widgetSize.x - 5,
-                                   m_viewportSize.y - widgetSize.y - 5));
-    ImGui::SetNextWindowSize(widgetSize);
-    ImGui::Begin(" ", nullptr, ImGuiWindowFlags_NoDecoration);
-
-    ImGui::Text("Light properties");
-
-    // Slider to control light properties
-    ImGui::PushItemWidth(widgetSize.x - 36);
-    ImGui::ColorEdit3("Ia", &m_Ia.x, ImGuiColorEditFlags_Float);
-    ImGui::ColorEdit3("Id", &m_Id.x, ImGuiColorEditFlags_Float);
-    ImGui::ColorEdit3("Is", &m_Is.x, ImGuiColorEditFlags_Float);
-    ImGui::PopItemWidth();
-
-    ImGui::Spacing();
-
-    ImGui::Text("Material properties");
-
-    // Slider to control material properties
-    ImGui::PushItemWidth(widgetSize.x - 36);
-    ImGui::ColorEdit3("Ka", &m_Ka.x, ImGuiColorEditFlags_Float);
-    ImGui::ColorEdit3("Kd", &m_Kd.x, ImGuiColorEditFlags_Float);
-    ImGui::ColorEdit3("Ks", &m_Ks.x, ImGuiColorEditFlags_Float);
-    ImGui::PopItemWidth();
-
-    // Slider to control the specular shininess
-    ImGui::PushItemWidth(widgetSize.x - 16);
-    ImGui::SliderFloat(" ", &m_shininess, 0.0f, 500.0f, "shininess: %.1f");
-    ImGui::PopItemWidth();
-
-    ImGui::End();
-  }
-
-  fileDialogModel.Display();
-  if (fileDialogModel.HasSelected()) {
-    loadModel(fileDialogModel.GetSelected().string());
-    fileDialogModel.ClearSelected();
-
-    if (m_model.isUVMapped()) {
-      // Use mesh texture coordinates if available...
-      m_mappingMode = 3;
-    } else {
-      // ...or triplanar mapping otherwise
-      m_mappingMode = 0;
-    }
-  }
-
-  fileDialogTex.Display();
-  if (fileDialogTex.HasSelected()) {
-    m_model.loadDiffuseTexture(fileDialogTex.GetSelected().string());
-    fileDialogTex.ClearSelected();
-  }
+  m_Ka = {0.101, 0.101, 0.101, 1.0};
+  m_Kd = {0.722, 0.722, 0.722, 1.0};
+  m_Ks = {0.624, 0.624, 0.624, 1.0};
+  m_shininess = 10.0;
 }
 
 void Window::onResize(glm::ivec2 const &size) {
@@ -387,4 +180,77 @@ void Window::onDestroy() {
   for (auto const &program : m_programs) {
     abcg::glDeleteProgram(program);
   }
+
+  destroySkybox();
+}
+
+void Window::createSkybox() {
+  auto const assetsPath{abcg::Application::getAssetsPath()};
+
+  // Create skybox program
+  auto const path{assetsPath + "shaders/" + m_skyShaderName};
+  m_skyProgram = abcg::createOpenGLProgram(
+      {{.source = path + ".vert", .stage = abcg::ShaderStage::Vertex},
+       {.source = path + ".frag", .stage = abcg::ShaderStage::Fragment}});
+
+  // Generate VBO
+  abcg::glGenBuffers(1, &m_skyVBO);
+  abcg::glBindBuffer(GL_ARRAY_BUFFER, m_skyVBO);
+  abcg::glBufferData(GL_ARRAY_BUFFER, sizeof(m_skyPositions),
+                     m_skyPositions.data(), GL_STATIC_DRAW);
+  abcg::glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+  // Get location of attributes in the program
+  auto const positionAttribute{
+      abcg::glGetAttribLocation(m_skyProgram, "inPosition")};
+
+  // Create VAO
+  abcg::glGenVertexArrays(1, &m_skyVAO);
+
+  // Bind vertex attributes to current VAO
+  abcg::glBindVertexArray(m_skyVAO);
+
+  abcg::glBindBuffer(GL_ARRAY_BUFFER, m_skyVBO);
+  abcg::glEnableVertexAttribArray(positionAttribute);
+  abcg::glVertexAttribPointer(positionAttribute, 3, GL_FLOAT, GL_FALSE, 0,
+                              nullptr);
+  abcg::glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+  // End of binding to current VAO
+  abcg::glBindVertexArray(0);
+}
+
+void Window::renderSkybox() {
+  abcg::glUseProgram(m_skyProgram);
+
+  auto const viewMatrixLoc{
+      abcg::glGetUniformLocation(m_skyProgram, "viewMatrix")};
+  auto const projMatrixLoc{
+      abcg::glGetUniformLocation(m_skyProgram, "projMatrix")};
+  auto const skyTexLoc{abcg::glGetUniformLocation(m_skyProgram, "skyTex")};
+
+  auto const viewMatrix{m_trackBallLight.getRotation()};
+  abcg::glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, &viewMatrix[0][0]);
+  abcg::glUniformMatrix4fv(projMatrixLoc, 1, GL_FALSE, &m_projMatrix[0][0]);
+  abcg::glUniform1i(skyTexLoc, 0);
+
+  abcg::glBindVertexArray(m_skyVAO);
+
+  abcg::glActiveTexture(GL_TEXTURE0);
+  abcg::glBindTexture(GL_TEXTURE_CUBE_MAP, m_model.getCubeTexture());
+
+  abcg::glEnable(GL_CULL_FACE);
+  abcg::glFrontFace(GL_CW);
+  abcg::glDepthFunc(GL_LEQUAL);
+  abcg::glDrawArrays(GL_TRIANGLES, 0, m_skyPositions.size());
+  abcg::glDepthFunc(GL_LESS);
+
+  abcg::glBindVertexArray(0);
+  abcg::glUseProgram(0);
+}
+
+void Window::destroySkybox() const {
+  abcg::glDeleteProgram(m_skyProgram);
+  abcg::glDeleteBuffers(1, &m_skyVBO);
+  abcg::glDeleteVertexArrays(1, &m_skyVAO);
 }

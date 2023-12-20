@@ -30,8 +30,7 @@ private:
   glm::mat4 m_projMatrix{1.0f};
 
   // Shaders
-  std::vector<char const *> m_shaderNames{"texture", "blinnphong", "phong",
-                                          "gouraud", "normal",     "depth"};
+  std::vector<char const *> m_shaderNames{"texture"};
   std::vector<GLuint> m_programs;
   int m_currentProgramIndex{};
 
@@ -49,6 +48,37 @@ private:
   glm::vec4 m_Ks{};
   float m_shininess{};
 
+  // Skybox
+  std::string const m_skyShaderName{"skybox"};
+  GLuint m_skyVAO{};
+  GLuint m_skyVBO{};
+  GLuint m_skyProgram{};
+
+  // clang-format off
+  std::array<glm::vec3, 36> const m_skyPositions{{
+      // Front
+      {-1, -1, +1}, {+1, -1, +1}, {+1, +1, +1},
+      {-1, -1, +1}, {+1, +1, +1}, {-1, +1, +1},
+      // Back
+      {+1, -1, -1}, {-1, -1, -1}, {-1, +1, -1},
+      {+1, -1, -1}, {-1, +1, -1}, {+1, +1, -1},
+      // Right
+      {+1, -1, -1}, {+1, +1, -1}, {+1, +1, +1},
+      {+1, -1, -1}, {+1, +1, +1}, {+1, -1, +1},
+      // Left
+      {-1, -1, +1}, {-1, +1, +1}, {-1, +1, -1},
+      {-1, -1, +1}, {-1, +1, -1}, {-1, -1, -1},
+      // Top
+      {-1, +1, +1}, {+1, +1, +1}, {+1, +1, -1},
+      {-1, +1, +1}, {+1, +1, -1}, {-1, +1, -1},
+      // Bottom
+      {-1, -1, -1}, {+1, -1, -1}, {+1, -1, +1},
+      {-1, -1, -1}, {+1, -1, +1}, {-1, -1, +1}}};
+  // clang-format on
+
+  void createSkybox();
+  void renderSkybox();
+  void destroySkybox() const;
   void loadModel(std::string_view path);
 };
 

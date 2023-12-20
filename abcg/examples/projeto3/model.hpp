@@ -14,6 +14,7 @@ struct Vertex {
 
 class Model {
 public:
+  void loadCubeTexture(std::string const &path);
   void loadDiffuseTexture(std::string_view path);
   void loadNormalTexture(std::string_view path);
   void loadObj(std::string_view path, bool standardize = true);
@@ -32,6 +33,8 @@ public:
 
   [[nodiscard]] bool isUVMapped() const { return m_hasTexCoords; }
 
+  [[nodiscard]] GLuint getCubeTexture() const { return m_cubeTexture; }
+
 private:
   GLuint m_VAO{};
   GLuint m_VBO{};
@@ -43,6 +46,7 @@ private:
   float m_shininess{};
   GLuint m_diffuseTexture{};
   GLuint m_normalTexture{};
+  GLuint m_cubeTexture{};
 
   std::vector<Vertex> m_vertices;
   std::vector<GLuint> m_indices;
